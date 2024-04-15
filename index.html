@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Canvas Image Movement</title>
+  <style>
+    canvas {
+      border: 1px solid black;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="myCanvas" width="400" height="400"></canvas>
+  <script>
+    // Defina a constante para receber a imagem
+    const image = new Image();
+    image.src = 'caminho/para/sua/imagem.jpg';
+
+    // Vetor de linhas representando origem e destino
+    const lines = [
+      [[100, 100], [200, 200]],
+      [[200, 200], [300, 100]],
+      // Adicione mais linhas conforme necessário
+    ];
+
+    // Velocidade em pixels por segundo
+    const speed = 1.5;
+
+    // Função para desenhar a imagem no canvas
+    function drawImage(context, img, x, y) {
+      context.clearRect(0, 0, context.canvas.width, context.canvas.height);
+      context.drawImage(img, x, y);
+    }
+
+    // Função principal para animar a imagem
+    function animate() {
+      const canvas = document.getElementById('myCanvas');
+      const context = canvas.getContext('2d');
+
+      let lineIndex = 0;
+      let pointIndex = 0;
+      let lastTime = performance.now(); // Tempo do último quadro
+
+      // Função de animação
+      function moveImage(timestamp) {
+        const currentTime = timestamp || performance.now();
+        const elapsedTime = (currentTime - lastTime) / 1000; // Tempo decorrido em segundos
+        lastTime = currentTime;
+
+        const [start, end] = lines[lineIndex];
+        const startX = start[0];
+        const startY = start[1];
+        const endX = end[0];
+        const endY = end[1];
+
+        const distanceX = endX - startX;
+        const distanceY = endY - startY;
+        const totalDistance = Math.sqrt(distanceX * distanceX + distanceY * distanceY);
+
+        const distance = speed * elapsedTime;
+
+        if (distance >= totalDistance) {
+          // Avança para a próxima linha
+          lineIndex = (lineIndex + 1) % lines.length;
+          pointIndex = 0;
+        } else {
+          // Calcula a nova posição da imagem
+          const ratio = distance / totalDistance;
+          const newX = startX + distanceX * ratio;
+          const newY = startY + distanceY * ratio;
+          drawImage(context, image, newX, newY);
+        }
+
+        requestAnimationFrame(moveImage);
+      }
+
+      // Inicie a animação
+      moveImage();
+    }
+
+    // Carregue a imagem antes de começar a animação
+    image.onload = animate;
+  </script>
+</body>
+</html>
